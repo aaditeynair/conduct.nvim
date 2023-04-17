@@ -32,7 +32,7 @@ function M.create_project(project_name)
 
     Path:new(data_folder):mkdir()
 
-    local project_file_location = data_folder .. "/" .. project_name .. ".json"
+    local project_file_location = data_folder .. "/" .. project_name .. ".lua"
     local project_file = Path:new(project_file_location)
 
     if not project_file:exists() then
@@ -41,17 +41,17 @@ function M.create_project(project_name)
         print("Overwriting existing project")
     end
 
-    local data = vim.json.encode(new_project)
+    local data = "return " .. vim.inspect(new_project)
     project_file:write(data, "w")
 
-    vim.cmd("e " .. project_file_location)
     project_file:close()
+    vim.cmd("e " .. project_file_location)
 end
 
 function M.load_project(project_name)
     Path:new(data_folder):mkdir()
 
-    local project_file_location = data_folder .. "/" .. project_name .. ".json"
+    local project_file_location = data_folder .. "/" .. project_name .. ".lua"
     local project_file = Path:new(project_file_location)
 
     if not project_file:exists() then
@@ -59,7 +59,7 @@ function M.load_project(project_name)
         return
     end
 
-    local project_data = vim.json.decode(project_file:read())
+    local project_data = dofile(project_file_location)
     if not CheckProjectData(project_data) then
         print("project data file is not properly formatted")
         return
@@ -68,11 +68,15 @@ function M.load_project(project_name)
     vim.api.nvim_set_current_dir(project_data.cwd)
 
     for lhs, rhs in pairs(project_data.keybinds) do
-        for var, value in pairs(project_data.variables) do
-            rhs = string.gsub(rhs, "${" .. var .. "}", value)
-        end
+        if type(rhs) == "string" then
+            for var, value in pairs(project_data.variables) do
+                rhs = string.gsub(rhs, "${" .. var .. "}", value)
+            end
 
-        vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
+            vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
+        elseif type(rhs) == "function" then
+            vim.keymap.set("n", lhs, rhs)
+        end
     end
 
     if project_data.preset ~= "" then
