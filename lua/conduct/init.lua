@@ -32,7 +32,7 @@ function M.create_project(project_name)
 
     Path:new(data_folder):mkdir()
 
-    local project_file_location = data_folder .. "/" .. project_name .. ".lua"
+    local project_file_location = GetDataFileLocation(project_name)
     local project_file = Path:new(project_file_location)
 
     if not project_file:exists() then
@@ -51,7 +51,7 @@ end
 function M.load_project(project_name)
     Path:new(data_folder):mkdir()
 
-    local project_file_location = data_folder .. "/" .. project_name .. ".lua"
+    local project_file_location = GetDataFileLocation(project_name)
     local project_file = Path:new(project_file_location)
 
     if not project_file:exists() then
@@ -67,45 +67,21 @@ function M.load_project(project_name)
 
     vim.api.nvim_set_current_dir(project_data.cwd)
 
-    for lhs, rhs in pairs(project_data.keybinds) do
-        if type(rhs) == "string" then
-            for var, value in pairs(project_data.variables) do
-                rhs = string.gsub(rhs, "${" .. var .. "}", value)
-            end
-
-            vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
-        elseif type(rhs) == "function" then
-            vim.keymap.set("n", lhs, rhs)
-        end
-    end
+    LoadKeybinds(project_data.keybinds, project_data.variables)
 
     if project_data.preset ~= "" then
-        M.load_preset(project_data.preset, project_data.variables)
+        local preset = M.presets[project_data.preset]
+        if preset == nil then
+            print("preset '" .. project_data.preset .. "' doesn't exist")
+            return
+        end
+
+        LoadKeybinds(preset.keybinds, project_data.variables)
     end
 
     M.current_project = project_data
 
     project_file:close()
-end
-
-function M.load_preset(preset_name, variables)
-    local preset = M.presets[preset_name]
-    if preset == nil then
-        print("preset '" .. preset_name .. "' doesn't exist")
-        return
-    end
-
-    for lhs, rhs in pairs(preset.keybinds) do
-        if type(rhs) == "string" then
-            for var, value in pairs(variables) do
-                rhs = string.gsub(rhs, "${" .. var .. "}", value)
-            end
-
-            vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
-        elseif type(rhs) == "function" then
-            vim.keymap.set("n", lhs, rhs)
-        end
-    end
 end
 
 -- Util functions
@@ -132,6 +108,24 @@ function CheckProjectData(project_data)
     end
 
     return true
+end
+
+function GetDataFileLocation(project_name)
+    return data_folder .. "/" .. project_name .. ".lua"
+end
+
+function LoadKeybinds(keybindings, variables)
+    for lhs, rhs in pairs(keybindings) do
+        if type(rhs) == "string" then
+            for var, value in pairs(variables) do
+                rhs = string.gsub(rhs, "${" .. var .. "}", value)
+            end
+
+            vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
+        elseif type(rhs) == "function" then
+            vim.keymap.set("n", lhs, rhs)
+        end
+    end
 end
 
 -- Autocmds
