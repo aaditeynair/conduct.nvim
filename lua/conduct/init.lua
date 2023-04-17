@@ -43,6 +43,7 @@ function M.create_project(project_name)
     project_file:write(data, "w")
 
     vim.cmd("e " .. project_file_location)
+    project_file:close()
 end
 
 function M.load_project(project_name)
@@ -63,6 +64,8 @@ function M.load_project(project_name)
     for lhs, rhs in pairs(project_data.keybinds) do
         vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
     end
+
+    project_file:close()
 end
 
 return M
