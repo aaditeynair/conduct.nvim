@@ -84,6 +84,22 @@ function M.load_project(project_name)
     project_file:close()
 end
 
+function M.load_project_config_file(project_name)
+    if project_name == "" then
+        if next(M.current_project) == nil then
+            print("please specify project name")
+        else
+            local current_project_name = M.current_project.name
+            local project_file = GetDataFileLocation(current_project_name)
+            vim.cmd("e " .. project_file)
+        end
+        return
+    end
+
+    local project_file_location = GetDataFileLocation(project_name)
+    vim.cmd("e " .. project_file_location)
+end
+
 -- Util functions
 
 function CheckProjectData(project_data)
