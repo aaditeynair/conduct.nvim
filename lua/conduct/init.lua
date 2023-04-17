@@ -65,7 +65,29 @@ function M.load_project(project_name)
         vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
     end
 
+    if project_data.preset ~= "" then
+        M.load_preset(project_data.preset)
+    end
+
+    M.current_project = project_data
+
     project_file:close()
+end
+
+function M.load_preset(preset_name)
+    local preset = M.presets[preset_name]
+    if preset == nil then
+        print("preset '" .. preset_name .. "' doesn't exist")
+        return
+    end
+
+    for lhs, rhs in pairs(preset.keybinds) do
+        if type(rhs) == "string" then
+            vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
+        elseif type(rhs) == "function" then
+            vim.keymap.set("n", lhs, rhs)
+        end
+    end
 end
 
 return M
