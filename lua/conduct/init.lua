@@ -58,6 +58,10 @@ function M.load_project(project_name)
     end
 
     local project_data = vim.json.decode(project_file:read())
+    if not CheckProjectData(project_data) then
+        print("project data file is not properly formatted")
+        return
+    end
 
     vim.api.nvim_set_current_dir(project_data.cwd)
 
@@ -88,6 +92,28 @@ function M.load_preset(preset_name)
             vim.keymap.set("n", lhs, rhs)
         end
     end
+end
+
+-- Util functions
+
+function CheckProjectData(project_data)
+    if type(project_data.name) ~= "string" then
+        return false
+    end
+
+    if type(project_data.cwd) ~= "string" then
+        return false
+    end
+
+    if type(project_data.keybinds) ~= "table" then
+        return false
+    end
+
+    if type(project_data.preset) ~= "string" then
+        return false
+    end
+
+    return true
 end
 
 return M
