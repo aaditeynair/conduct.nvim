@@ -4,6 +4,7 @@ local data_folder = vim.fn.stdpath("data") .. "/conduct/"
 local M = {}
 
 M.presets = {}
+M.current_project = {}
 
 function M.setup(opts)
     if type(opts) ~= "table" then
@@ -115,5 +116,28 @@ function CheckProjectData(project_data)
 
     return true
 end
+
+-- Autocmds
+
+vim.api.nvim_create_autocmd("ExitPre", {
+    desc = "Delete the keybindings set by the project",
+    callback = function()
+        if M.current_project ~= {} then
+            if type(M.current_project.keybinds) == "table" then
+                for lhs, _ in pairs(M.current_project.keybinds) do
+                    vim.api.nvim_del_keymap("n", lhs)
+                end
+            end
+
+            local preset = M.current_project.preset
+            if preset ~= "" and M.presets[preset] ~= nil then
+                for lhs, _ in pairs(M.presets[preset].keybinds) do
+                    vim.keymap.del("n", lhs)
+                end
+            end
+        end
+    end,
+    pattern = "*",
+})
 
 return M
