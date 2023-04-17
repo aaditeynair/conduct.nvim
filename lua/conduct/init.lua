@@ -45,4 +45,24 @@ function M.create_project(project_name)
     vim.cmd("e " .. project_file_location)
 end
 
+function M.load_project(project_name)
+    Path:new(data_folder):mkdir()
+
+    local project_file_location = data_folder .. "/" .. project_name .. ".json"
+    local project_file = Path:new(project_file_location)
+
+    if not project_file:exists() then
+        print("project doesn't exists")
+        return
+    end
+
+    local project_data = vim.json.decode(project_file:read())
+
+    vim.api.nvim_set_current_dir(project_data.cwd)
+
+    for lhs, rhs in pairs(project_data.keybinds) do
+        vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
+    end
+end
+
 return M
