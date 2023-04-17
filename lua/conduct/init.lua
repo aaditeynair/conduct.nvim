@@ -27,6 +27,7 @@ function M.create_project(project_name)
         cwd = vim.fn.getcwd(),
         keybinds = {},
         preset = "",
+        variables = {},
     }
 
     Path:new(data_folder):mkdir()
@@ -67,11 +68,15 @@ function M.load_project(project_name)
     vim.api.nvim_set_current_dir(project_data.cwd)
 
     for lhs, rhs in pairs(project_data.keybinds) do
+        for var, value in pairs(project_data.variables) do
+            rhs = string.gsub(rhs, "${" .. var .. "}", value)
+        end
+
         vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
     end
 
     if project_data.preset ~= "" then
-        M.load_preset(project_data.preset)
+        M.load_preset(project_data.preset, project_data.variables)
     end
 
     M.current_project = project_data
@@ -79,7 +84,7 @@ function M.load_project(project_name)
     project_file:close()
 end
 
-function M.load_preset(preset_name)
+function M.load_preset(preset_name, variables)
     local preset = M.presets[preset_name]
     if preset == nil then
         print("preset '" .. preset_name .. "' doesn't exist")
@@ -88,6 +93,10 @@ function M.load_preset(preset_name)
 
     for lhs, rhs in pairs(preset.keybinds) do
         if type(rhs) == "string" then
+            for var, value in pairs(variables) do
+                rhs = string.gsub(rhs, "${" .. var .. "}", value)
+            end
+
             vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
         elseif type(rhs) == "function" then
             vim.keymap.set("n", lhs, rhs)
@@ -111,6 +120,10 @@ function CheckProjectData(project_data)
     end
 
     if type(project_data.preset) ~= "string" then
+        return false
+    end
+
+    if type(project_data.variables) ~= "table" then
         return false
     end
 
