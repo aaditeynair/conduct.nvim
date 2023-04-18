@@ -1,5 +1,8 @@
 local Path = require("plenary.path")
 local data_folder = vim.fn.stdpath("data") .. "/conduct/"
+local conduct_augroup = vim.api.nvim_create_augroup("CONDUCT_NVIM", {
+    clear = true,
+})
 
 local M = {}
 
@@ -95,19 +98,46 @@ function M.load_project(project_name)
 end
 
 function M.load_project_config_file(project_name)
+    local project_to_be_opened = project_name
     if project_name == "" then
         if next(M.current_project) == nil then
             print("please specify project name")
+            return
         else
-            local current_project_name = M.current_project.name
-            local project_file = GetDataFileLocation(current_project_name)
-            vim.cmd("e " .. project_file)
+            project_to_be_opened = M.current_project.name
         end
+    end
+
+    local project_file_location = GetDataFileLocation(project_to_be_opened)
+    vim.cmd("e " .. project_file_location)
+
+    if
+        next(vim.api.nvim_get_autocmds({
+            event = "BufWritePost",
+            buffer = 0,
+            group = conduct_augroup,
+        })) == nil
+    then
+        vim.api.nvim_create_autocmd("BufWritePost", {
+            buffer = 0,
+            group = conduct_augroup,
+            callback = function()
+                if M.current_project.name == project_to_be_opened then
+                    print("reloading project config...")
+                    M.reload_current_project_config()
+                end
+            end,
+        })
+    end
+end
+
+function M.reload_current_project_config()
+    if next(M.current_project) == nil then
+        print("no project active")
         return
     end
 
-    local project_file_location = GetDataFileLocation(project_name)
-    vim.cmd("e " .. project_file_location)
+    M.load_project(M.current_project.name)
 end
 
 -- Util functions
@@ -170,6 +200,7 @@ end
 
 vim.api.nvim_create_autocmd("ExitPre", {
     desc = "Delete the keybindings set by the project",
+    group = conduct_augroup,
     callback = function()
         if M.current_project ~= {} then
             if type(M.current_project.keybinds) == "table" then
