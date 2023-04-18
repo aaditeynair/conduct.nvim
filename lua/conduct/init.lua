@@ -133,6 +133,12 @@ end
 function LoadKeybinds(keybindings, variables)
     for _, keybinding in ipairs(keybindings) do
         local lhs, rhs, type = keybinding[1], keybinding[2], keybinding[3]
+
+        if type == nil then
+            print("Keybinding type is not defined. Assumed as 'command'")
+            type = "command"
+        end
+
         if type == "command" then
             for var, value in pairs(variables) do
                 rhs = string.gsub(rhs, "${" .. var .. "}", value)
