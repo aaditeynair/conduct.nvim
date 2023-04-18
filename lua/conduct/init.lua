@@ -41,7 +41,7 @@ function M.create_project(project_name)
         print("Overwriting existing project")
     end
 
-    local data = "return " .. vim.inspect(new_project)
+    local data = vim.json.encode(new_project)
     project_file:write(data, "w")
 
     project_file:close()
@@ -59,7 +59,7 @@ function M.load_project(project_name)
         return
     end
 
-    local project_data = dofile(project_file_location)
+    local project_data = vim.json.decode(project_file:read())
     if not CheckProjectData(project_data) then
         print("project data file is not properly formatted")
         return
@@ -127,7 +127,7 @@ function CheckProjectData(project_data)
 end
 
 function GetDataFileLocation(project_name)
-    return data_folder .. "/" .. project_name .. ".lua"
+    return data_folder .. "/" .. project_name .. ".json"
 end
 
 function LoadKeybinds(keybindings, variables)
