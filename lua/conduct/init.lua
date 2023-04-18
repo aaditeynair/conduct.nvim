@@ -4,6 +4,7 @@ local data_folder = vim.fn.stdpath("data") .. "/conduct/"
 local M = {}
 
 M.presets = {}
+M.functions = {}
 M.current_project = {}
 
 function M.setup(opts)
@@ -18,6 +19,15 @@ function M.setup(opts)
     else
         M.presets = {}
         print("presets must be a table")
+    end
+
+    if type(opts.functions) == "nil" then
+        M.functions = {}
+    elseif type(opts.functions) == "table" then
+        M.functions = opts.functions
+    else
+        M.functions = {}
+        print("functions must be a table")
     end
 end
 
@@ -146,7 +156,12 @@ function LoadKeybinds(keybindings, variables)
 
             vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
         elseif type == "function" then
-            vim.keymap.set("n", lhs, rhs)
+            local user_function = M.functions[rhs]
+            if user_function == nil then
+                print("function " .. rhs .. " is not defined")
+                return
+            end
+            vim.keymap.set("n", lhs, user_function)
         end
     end
 end
