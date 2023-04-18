@@ -131,14 +131,15 @@ function GetDataFileLocation(project_name)
 end
 
 function LoadKeybinds(keybindings, variables)
-    for lhs, rhs in pairs(keybindings) do
-        if type(rhs) == "string" then
+    for _, keybinding in ipairs(keybindings) do
+        local lhs, rhs, type = keybinding[1], keybinding[2], keybinding[3]
+        if type == "command" then
             for var, value in pairs(variables) do
                 rhs = string.gsub(rhs, "${" .. var .. "}", value)
             end
 
             vim.keymap.set("n", lhs, "<CMD>" .. rhs .. "<CR>")
-        elseif type(rhs) == "function" then
+        elseif type == "function" then
             vim.keymap.set("n", lhs, rhs)
         end
     end
