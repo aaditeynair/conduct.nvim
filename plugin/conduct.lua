@@ -10,8 +10,34 @@ end, { nargs = 1 })
 
 vim.api.nvim_create_user_command("ConductLoadProject", function(opts)
     require("conduct").load_project(opts.args)
-end, { nargs = 1 })
+end, {
+    nargs = 1,
+    complete = function(lead)
+        local all_projects = require("conduct").list_all_projects()
+        local projects = {}
+        for _, project in ipairs(all_projects) do
+            if project:find("^" .. lead) ~= nil then
+                table.insert(projects, project)
+            end
+        end
+
+        return projects
+    end,
+})
 
 vim.api.nvim_create_user_command("ConductLoadProjectConfig", function(opts)
     require("conduct").load_project_config_file(opts.args)
-end, { nargs = "?" })
+end, {
+    nargs = "?",
+    complete = function(lead)
+        local all_projects = require("conduct").list_all_projects()
+        local projects = {}
+        for _, project in ipairs(all_projects) do
+            if project:find("^" .. lead) ~= nil then
+                table.insert(projects, project)
+            end
+        end
+
+        return projects
+    end,
+})

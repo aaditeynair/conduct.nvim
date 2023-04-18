@@ -140,6 +140,17 @@ function M.reload_current_project_config()
     M.load_project(M.current_project.name)
 end
 
+function M.list_all_projects()
+    local all_files = vim.split(vim.fn.glob(data_folder .. "*.json"), "\n")
+    local all_project_names = {}
+    for _, file in ipairs(all_files) do
+        local project_name = file:gsub(data_folder, ""):gsub(".json", "")
+        table.insert(all_project_names, project_name)
+    end
+
+    return all_project_names
+end
+
 -- Util functions
 
 function CheckProjectData(project_data)
