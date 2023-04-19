@@ -94,6 +94,16 @@ function M.load_project(project_name)
 
     M.current_project = project_data
 
+    local last_file_location = Path:new(data_folder .. "__last__")
+
+    local last_file = Path:new(last_file_location)
+    if last_file:exists() then
+        last_file:rm()
+    end
+
+    vim.loop.fs_symlink(project_file:absolute(), last_file:absolute())
+
+    last_file:close()
     project_file:close()
 end
 
@@ -129,6 +139,30 @@ function M.load_project_config_file(project_name)
             end,
         })
     end
+end
+
+function M.load_last_project()
+    local last_project_location = Path:new(data_folder .. "__last__")
+    local project_path = vim.loop.fs_readlink(last_project_location:absolute())
+    last_project_location:close()
+
+    if not project_path then
+        print("no last project stored")
+        return
+    end
+
+    local last_project = Path:new(project_path)
+    if not last_project:exists() then
+        last_project:rm()
+        print("last opened project was deleted")
+        return
+    end
+
+    local last_project_path = last_project:absolute()
+    last_project:close()
+
+    local project = last_project_path:gsub(data_folder, ""):gsub(".json", "")
+    M.load_project(project)
 end
 
 function M.reload_current_project_config()
@@ -178,7 +212,7 @@ function CheckProjectData(project_data)
 end
 
 function GetDataFileLocation(project_name)
-    return data_folder .. "/" .. project_name .. ".json"
+    return data_folder .. project_name .. ".json"
 end
 
 function LoadKeybinds(keybindings, variables)
