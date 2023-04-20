@@ -10,6 +10,8 @@ M.presets = {}
 M.functions = {}
 M.current_project = {}
 
+M.after_project_load = function() end
+
 function M.setup(opts)
     if type(opts) ~= "table" then
         return
@@ -31,6 +33,10 @@ function M.setup(opts)
     else
         M.functions = {}
         print("functions must be a table")
+    end
+
+    if type(opts.after_load_function) == "function" then
+        M.after_project_load = opts.after_load_function
     end
 end
 
@@ -108,6 +114,8 @@ function M.load_project(project_name)
 
     last_file:write(vim.json.encode(last_file_data), "w")
     last_file:close()
+
+    M.after_project_load()
 end
 
 function M.load_project_config_file(project_name)
