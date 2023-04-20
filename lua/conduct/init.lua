@@ -104,7 +104,7 @@ function M.load_project(project_name)
     if current_proj_index ~= nil then
         table.remove(last_file_data, current_proj_index)
     end
-    table.insert(last_file_data, project_data.name)
+    table.insert(last_file_data, 1, project_data.name)
 
     last_file:write(vim.json.encode(last_file_data), "w")
     last_file:close()
@@ -150,7 +150,7 @@ function M.load_last_project()
     local last_data = vim.json.decode(last_data_file:read())
     last_data_file:close()
 
-    local last_project_name = last_data[#last_data]
+    local last_project_name = last_data[1]
     M.load_project(last_project_name)
 end
 
@@ -172,6 +172,15 @@ function M.list_all_projects()
     end
 
     return all_project_names
+end
+
+function M.get_last_opened_projects()
+    local last_project_data_file = data_folder .. "__last__"
+    local last_data_file = Path:new(last_project_data_file)
+    local last_data = vim.json.decode(last_data_file:read())
+    last_data_file:close()
+
+    return last_data
 end
 
 -- Util functions
