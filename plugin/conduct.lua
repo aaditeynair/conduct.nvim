@@ -25,7 +25,7 @@ vim.api.nvim_create_user_command("ConductLoadProject", function(opts)
 end, {
     nargs = 1,
     complete = function(lead)
-        GetProjectNames(lead)
+        return GetProjectNames(lead)
     end,
 })
 
@@ -38,6 +38,6 @@ vim.api.nvim_create_user_command("ConductLoadProjectConfig", function(opts)
 end, {
     nargs = "?",
     complete = function(lead)
-        GetProjectNames(lead)
+        return GetProjectNames(lead)
     end,
 })

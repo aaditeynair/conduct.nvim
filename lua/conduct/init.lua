@@ -73,38 +73,41 @@ function M.load_project(project_name)
     end
 
     local project_data = vim.json.decode(project_file:read())
+    project_file:close()
+
     if not CheckProjectData(project_data) then
         print("project data file is not properly formatted")
         return
     end
+    M.current_project = project_data
 
     vim.api.nvim_set_current_dir(project_data.cwd)
-
     LoadKeybinds(project_data.keybinds, project_data.variables)
 
     if project_data.preset ~= "" then
         local preset = M.presets[project_data.preset]
         if preset == nil then
             print("preset '" .. project_data.preset .. "' doesn't exist")
-            return
+        else
+            LoadKeybinds(preset.keybinds, project_data.variables)
         end
-
-        LoadKeybinds(preset.keybinds, project_data.variables)
     end
 
-    M.current_project = project_data
-
-    local last_file_location = Path:new(data_folder .. "__last__")
-
-    local last_file = Path:new(last_file_location)
-    if last_file:exists() then
-        last_file:rm()
+    local last_file = Path:new(data_folder .. "__last__")
+    if not last_file:exists() then
+        last_file:touch()
+        last_file:write(vim.json.encode({}), "w")
     end
 
-    vim.loop.fs_symlink(project_file:absolute(), last_file:absolute())
+    local last_file_data = vim.json.decode(last_file:read())
+    local current_proj_index = GetIndexOfItem(last_file_data, project_data.name)
+    if current_proj_index ~= nil then
+        table.remove(last_file_data, current_proj_index)
+    end
+    table.insert(last_file_data, project_data.name)
 
+    last_file:write(vim.json.encode(last_file_data), "w")
     last_file:close()
-    project_file:close()
 end
 
 function M.load_project_config_file(project_name)
@@ -142,27 +145,13 @@ function M.load_project_config_file(project_name)
 end
 
 function M.load_last_project()
-    local last_project_location = Path:new(data_folder .. "__last__")
-    local project_path = vim.loop.fs_readlink(last_project_location:absolute())
-    last_project_location:close()
+    local last_project_data_file = data_folder .. "__last__"
+    local last_data_file = Path:new(last_project_data_file)
+    local last_data = vim.json.decode(last_data_file:read())
+    last_data_file:close()
 
-    if not project_path then
-        print("no last project stored")
-        return
-    end
-
-    local last_project = Path:new(project_path)
-    if not last_project:exists() then
-        last_project:rm()
-        print("last opened project was deleted")
-        return
-    end
-
-    local last_project_path = last_project:absolute()
-    last_project:close()
-
-    local project = last_project_path:gsub(data_folder, ""):gsub(".json", "")
-    M.load_project(project)
+    local last_project_name = last_data[#last_data]
+    M.load_project(last_project_name)
 end
 
 function M.reload_current_project_config()
@@ -239,6 +228,16 @@ function LoadKeybinds(keybindings, variables)
             vim.keymap.set("n", lhs, user_function)
         end
     end
+end
+
+function GetIndexOfItem(list, item_name)
+    for i, item in ipairs(list) do
+        if item == item_name then
+            return i
+        end
+    end
+
+    return nil
 end
 
 -- Autocmds
