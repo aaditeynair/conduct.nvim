@@ -11,6 +11,7 @@ M.functions = {}
 M.current_project = {}
 
 M.after_project_load = function() end
+M.before_project_load = function() end
 
 function M.setup(opts)
     if type(opts) ~= "table" then
@@ -38,6 +39,11 @@ function M.setup(opts)
     if type(opts.after_load_function) == "function" then
         M.after_project_load = opts.after_load_function
     end
+
+    -- hi
+    if type(opts.before_load_function) == "function" then
+        M.before_project_load = opts.before_load_function
+    end
 end
 
 function M.create_project(project_name)
@@ -64,10 +70,14 @@ function M.create_project(project_name)
     project_file:write(data, "w")
 
     project_file:close()
-    vim.cmd("e " .. project_file_location)
+    M.load_project(new_project.name)
 end
 
 function M.load_project(project_name)
+    if next(M.current_project) ~= nil then
+        CleanUpProject()
+    end
+
     Path:new(data_folder):mkdir()
 
     local project_file_location = GetDataFileLocation(project_name)
@@ -86,6 +96,8 @@ function M.load_project(project_name)
         return
     end
     M.current_project = project_data
+
+    M.before_project_load()
 
     vim.api.nvim_set_current_dir(project_data.cwd)
     LoadKeybinds(project_data.keybinds, project_data.variables)
@@ -168,7 +180,30 @@ function M.reload_current_project_config()
         return
     end
 
+    CleanUpProject()
+    --
+    -- local project_file_location = GetDataFileLocation(M.current_project.name)
+    -- local project_file = Path:new(project_file_location)
+    -- local project_data = vim.json.decode(project_file:read())
+    -- project_file:close()
+    --
+    -- M.current_project = project_data
+    --
+    -- vim.api.nvim_set_current_dir(project_data.cwd)
+    -- LoadKeybinds(project_data.keybinds, project_data.variables)
+    --
+    -- if project_data.preset ~= "" then
+    --     local preset = M.presets[project_data.preset]
+    --     if preset == nil then
+    --         print("preset '" .. project_data.preset .. "' doesn't exist")
+    --     else
+    --         LoadKeybinds(preset.keybinds, project_data.variables)
+    --     end
+    -- end
+
     M.load_project(M.current_project.name)
+
+    M.after_project_load()
 end
 
 function M.list_all_projects()
@@ -257,26 +292,31 @@ function GetIndexOfItem(list, item_name)
     return nil
 end
 
+function CleanUpProject()
+    if M.current_project ~= {} then
+        if type(M.current_project.keybinds) == "table" then
+            for _, keybinding in ipairs(M.current_project.keybinds) do
+                local lhs = keybinding[1]
+                vim.api.nvim_del_keymap("n", lhs)
+            end
+        end
+
+        local preset = M.current_project.preset
+        if preset ~= "" and M.presets[preset] ~= nil then
+            for lhs, _ in pairs(M.presets[preset].keybinds) do
+                vim.keymap.del("n", lhs)
+            end
+        end
+    end
+end
+
 -- Autocmds
 
 vim.api.nvim_create_autocmd("ExitPre", {
     desc = "Delete the keybindings set by the project",
     group = conduct_augroup,
     callback = function()
-        if M.current_project ~= {} then
-            if type(M.current_project.keybinds) == "table" then
-                for lhs, _ in pairs(M.current_project.keybinds) do
-                    vim.api.nvim_del_keymap("n", lhs)
-                end
-            end
-
-            local preset = M.current_project.preset
-            if preset ~= "" and M.presets[preset] ~= nil then
-                for lhs, _ in pairs(M.presets[preset].keybinds) do
-                    vim.keymap.del("n", lhs)
-                end
-            end
-        end
+        CleanUpProject()
     end,
     pattern = "*",
 })
