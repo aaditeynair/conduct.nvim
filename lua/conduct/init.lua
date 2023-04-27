@@ -1,5 +1,6 @@
 local Path = require("plenary.path")
 local data_folder = vim.fn.stdpath("data") .. "/conduct/"
+
 local conduct_augroup = vim.api.nvim_create_augroup("CONDUCT_NVIM", {
     clear = true,
 })
@@ -57,8 +58,11 @@ function M.create_project(project_name)
 
     Path:new(data_folder):mkdir()
 
-    local project_file_location = GetDataFileLocation(project_name)
-    local project_file = Path:new(project_file_location)
+    local project_folder = GetProjectDataFolder(project_name)
+    Path:new(project_folder):mkdir()
+
+    local project_data_file = project_folder .. "data.json"
+    local project_file = Path:new(project_data_file)
 
     if not project_file:exists() then
         project_file:touch()
@@ -80,13 +84,16 @@ function M.load_project(project_name)
 
     Path:new(data_folder):mkdir()
 
-    local project_file_location = GetDataFileLocation(project_name)
-    local project_file = Path:new(project_file_location)
+    local project_data_folder = GetProjectDataFolder(project_name)
+    local project_folder = Path:new(project_data_folder)
 
-    if not project_file:exists() then
+    if not project_folder:exists() then
         print("project doesn't exists")
         return
     end
+
+    local project_file_location = project_data_folder .. "data.json"
+    local project_file = Path:new(project_file_location)
 
     local project_data = vim.json.decode(project_file:read())
     project_file:close()
@@ -141,7 +148,8 @@ function M.load_project_config_file(project_name)
         end
     end
 
-    local project_file_location = GetDataFileLocation(project_to_be_opened)
+    local project_folder = GetProjectDataFolder(project_to_be_opened)
+    local project_file_location = project_folder .. "data.json"
     vim.cmd("e " .. project_file_location)
 
     if
@@ -180,37 +188,16 @@ function M.reload_current_project_config()
         return
     end
 
-    CleanUpProject()
-    --
-    -- local project_file_location = GetDataFileLocation(M.current_project.name)
-    -- local project_file = Path:new(project_file_location)
-    -- local project_data = vim.json.decode(project_file:read())
-    -- project_file:close()
-    --
-    -- M.current_project = project_data
-    --
-    -- vim.api.nvim_set_current_dir(project_data.cwd)
-    -- LoadKeybinds(project_data.keybinds, project_data.variables)
-    --
-    -- if project_data.preset ~= "" then
-    --     local preset = M.presets[project_data.preset]
-    --     if preset == nil then
-    --         print("preset '" .. project_data.preset .. "' doesn't exist")
-    --     else
-    --         LoadKeybinds(preset.keybinds, project_data.variables)
-    --     end
-    -- end
-
     M.load_project(M.current_project.name)
 
     M.after_project_load()
 end
 
 function M.list_all_projects()
-    local all_files = vim.split(vim.fn.glob(data_folder .. "*.json"), "\n")
+    local all_files = vim.split(vim.fn.glob(data_folder .. "*/"), "\n")
     local all_project_names = {}
     for _, file in ipairs(all_files) do
-        local project_name = file:gsub(data_folder, ""):gsub(".json", "")
+        local project_name = file:gsub(data_folder, ""):gsub("/", "")
         table.insert(all_project_names, project_name)
     end
 
@@ -252,8 +239,8 @@ function CheckProjectData(project_data)
     return true
 end
 
-function GetDataFileLocation(project_name)
-    return data_folder .. project_name .. ".json"
+function GetProjectDataFolder(project_name)
+    return data_folder .. project_name .. "/"
 end
 
 function LoadKeybinds(keybindings, variables)
