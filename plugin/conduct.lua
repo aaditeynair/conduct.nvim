@@ -41,3 +41,11 @@ end, {
         return GetProjectNames(lead)
     end,
 })
+
+vim.api.nvim_create_user_command("ConductProjectNewSession", function(opts)
+    require("conduct").create_new_session(opts.args)
+end, { nargs = 1 })
+
+vim.api.nvim_create_user_command("ConductProjectLoadSession", function(opts)
+    require("conduct").load_session(opts.args)
+end, { nargs = 1 })

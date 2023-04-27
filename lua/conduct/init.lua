@@ -48,6 +48,8 @@ function M.setup(opts)
     end
 end
 
+-- Projects
+
 function M.create_project(project_name)
     local new_project = {
         name = project_name,
@@ -126,7 +128,12 @@ function M.load_project(project_name)
 
     local last_session_file = sessions_folder:absolute() .. "__last__"
     local last_session = vim.loop.fs_readlink(last_session_file)
-    vim.cmd("silent source " .. last_session)
+    if last_session ~= nil then
+        vim.cmd("silent source " .. last_session)
+        local list = vim.split(last_session, "/")
+        local session_name = list[#list]
+        M.current_session = session_name:gsub(".vim$", "")
+    end
 
     sessions_folder:close()
 
@@ -229,7 +236,6 @@ end
 
 function M.store_current_session()
     if next(M.current_project) == nil then
-        print("no project loaded")
         return
     end
 
@@ -239,10 +245,11 @@ function M.store_current_session()
     sessions_folder:mkdir()
 
     local session_file
-    if M.current_session ~= "" then
-        session_file = sessions_folder:absolute() .. session_file
-    else
+    if M.current_session == "" then
         session_file = sessions_folder:absolute() .. "Session.vim"
+        M.current_session = "Session"
+    else
+        session_file = sessions_folder:absolute() .. M.current_session .. ".vim"
     end
 
     vim.cmd("silent mksession! " .. session_file)
@@ -254,6 +261,37 @@ function M.store_current_session()
     end
 
     vim.loop.fs_symlink(session_file, last_session)
+end
+
+function M.create_new_session(session_name)
+    M.store_current_session()
+
+    M.current_session = session_name
+
+    M.store_current_session()
+end
+
+function M.load_session(session_name)
+    if next(M.current_project) == nil then
+        return
+    end
+
+    M.store_current_session()
+
+    local project_data_folder = GetProjectDataFolder(M.current_project.name)
+    local sessions_folder = Path:new(project_data_folder .. "sessions/")
+    sessions_folder:mkdir()
+
+    local session_file = sessions_folder:absolute() .. session_name .. ".vim"
+    local session = Path:new(session_file)
+    if session:exists() then
+        vim.cmd("silent source " .. session_file)
+        M.current_session = session_name
+    else
+        print("session doesn't exists")
+    end
+
+    session:close()
 end
 
 -- Util functions
