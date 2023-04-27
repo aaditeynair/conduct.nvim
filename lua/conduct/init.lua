@@ -10,6 +10,7 @@ local M = {}
 M.presets = {}
 M.functions = {}
 M.current_project = {}
+M.current_session = ""
 
 M.after_project_load = function() end
 M.before_project_load = function() end
@@ -64,6 +65,8 @@ function M.create_project(project_name)
     local project_data_file = project_folder .. "data.json"
     local project_file = Path:new(project_data_file)
 
+    Path:new(project_folder .. "sessions/"):mkdir()
+
     if not project_file:exists() then
         project_file:touch()
     else
@@ -117,6 +120,15 @@ function M.load_project(project_name)
             LoadKeybinds(preset.keybinds, project_data.variables)
         end
     end
+
+    local sessions_folder = Path:new(project_data_folder .. "sessions/")
+    sessions_folder:mkdir()
+
+    local last_session_file = sessions_folder:absolute() .. "__last__"
+    local last_session = vim.loop.fs_readlink(last_session_file)
+    vim.cmd("silent source " .. last_session)
+
+    sessions_folder:close()
 
     local last_file = Path:new(data_folder .. "__last__")
     if not last_file:exists() then
@@ -213,6 +225,37 @@ function M.get_last_opened_projects()
     return last_data
 end
 
+-- Sessions
+
+function M.store_current_session()
+    if next(M.current_project) == nil then
+        print("no project loaded")
+        return
+    end
+
+    local project_name = M.current_project.name
+    local project_folder = GetProjectDataFolder(project_name)
+    local sessions_folder = Path:new(project_folder .. "sessions/")
+    sessions_folder:mkdir()
+
+    local session_file
+    if M.current_session ~= "" then
+        session_file = sessions_folder:absolute() .. session_file
+    else
+        session_file = sessions_folder:absolute() .. "Session.vim"
+    end
+
+    vim.cmd("silent mksession! " .. session_file)
+
+    local last_session = sessions_folder:absolute() .. "__last__"
+    local last_session_file = Path:new(last_session)
+    if last_session_file:exists() then
+        last_session_file:rm()
+    end
+
+    vim.loop.fs_symlink(session_file, last_session)
+end
+
 -- Util functions
 
 function CheckProjectData(project_data)
@@ -280,6 +323,8 @@ function GetIndexOfItem(list, item_name)
 end
 
 function CleanUpProject()
+    M.store_current_session()
+
     if M.current_project ~= {} then
         if type(M.current_project.keybinds) == "table" then
             for _, keybinding in ipairs(M.current_project.keybinds) do
