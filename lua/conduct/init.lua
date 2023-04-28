@@ -237,11 +237,22 @@ function M.delete_project(project_name)
     if project_name ~= "" then
         project_to_be_deleted = project_name
     elseif next(M.current_project) ~= nil then
-        project_to_be_deleted = M.current_project.name
-        CleanUpProject()
-        M.current_project = {}
+        vim.ui.input({ prompt = "delete current project y/n: " }, function(input)
+            if input == "y" then
+                project_to_be_deleted = M.current_project.name
+                CleanUpProject()
+                M.current_project = {}
+            else
+                project_to_be_deleted = ""
+                print("aborting")
+            end
+        end)
     else
         print("project doesn't exists")
+        return
+    end
+
+    if project_to_be_deleted == "" then
         return
     end
 
