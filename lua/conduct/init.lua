@@ -232,6 +232,43 @@ function M.get_last_opened_projects()
     return last_data
 end
 
+function M.delete_project(project_name)
+    local project_to_be_deleted
+    if project_name ~= "" then
+        project_to_be_deleted = project_name
+    elseif next(M.current_project) ~= nil then
+        project_to_be_deleted = M.current_project.name
+        CleanUpProject()
+        M.current_project = {}
+    else
+        print("project doesn't exists")
+        return
+    end
+
+    local project_path = GetProjectDataFolder(project_to_be_deleted)
+    local project_folder = Path:new(project_path)
+    if not project_folder:exists() then
+        print("project doesn't exists")
+        return
+    end
+
+    RemoveItemsFromFolder(project_path)
+    project_folder:rmdir()
+
+    local last_file = Path:new(data_folder .. "__last__")
+    if last_file:exists() then
+        local data = vim.json.decode(last_file:read())
+        local index = GetIndexOfItem(data, project_to_be_deleted)
+        if index ~= nil then
+            table.remove(data, index)
+        end
+        last_file:write(vim.json.encode(data), "w")
+    else
+        last_file:touch()
+        last_file:write(vim.json.encode({}), "w")
+    end
+end
+
 -- Sessions
 
 function M.store_current_session()
@@ -376,6 +413,21 @@ function CleanUpProject()
             for lhs, _ in pairs(M.presets[preset].keybinds) do
                 vim.keymap.del("n", lhs)
             end
+        end
+    end
+end
+
+function RemoveItemsFromFolder(folder, i)
+    for _, val in ipairs(vim.split(vim.fn.glob(folder .. "*"), "\n")) do
+        if val ~= "" then
+            local contents = Path:new(val)
+            if not contents:is_dir() then
+                contents:rm()
+            else
+                RemoveItemsFromFolder(contents:absolute() .. "/")
+                contents:rmdir()
+            end
+            contents:close()
         end
     end
 end

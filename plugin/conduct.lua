@@ -42,6 +42,15 @@ end, {
     end,
 })
 
+vim.api.nvim_create_user_command("ConductDeleteProject", function(opts)
+    require("conduct").delete_project(opts.args)
+end, {
+    nargs = "?",
+    complete = function(lead)
+        return GetProjectNames(lead)
+    end,
+})
+
 vim.api.nvim_create_user_command("ConductProjectNewSession", function(opts)
     require("conduct").create_new_session(opts.args)
 end, { nargs = 1 })
