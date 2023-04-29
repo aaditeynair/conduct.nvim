@@ -283,8 +283,8 @@ function M.delete_project(project_name)
 end
 
 function M.rename_project(old_name, new_name)
-    if old_name == nil or new_name == nil then
-        print("please supply all arguments")
+    if type(old_name) ~= "string" or type(new_name) ~= "string" then
+        print("please supply all args")
         return
     end
 
