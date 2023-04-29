@@ -283,14 +283,24 @@ function M.delete_project(project_name)
 end
 
 function M.rename_project(old_name, new_name)
+    if old_name == nil or new_name == nil then
+        print("please supply all arguments")
+        return
+    end
+
+    local abort = false
     vim.ui.input({
         prompt = "this will delete all your saved sessions. proceed [y/n]: ",
     }, function(confirm)
         if confirm ~= "y" then
             print("aborting...")
-            return
+            abort = true
         end
     end)
+
+    if abort then
+        return
+    end
 
     local old_project_path = GetProjectDataFolder(old_name)
     local new_project_path = GetProjectDataFolder(new_name)
