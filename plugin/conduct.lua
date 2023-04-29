@@ -51,6 +51,17 @@ end, {
     end,
 })
 
+vim.api.nvim_create_user_command("ConductRenameProject", function(opts)
+    local old_name = opts.fargs[1]
+    local new_name = opts.fargs[2]
+    require("conduct").rename_project(old_name, new_name)
+end, {
+    nargs = "*",
+    complete = function(lead)
+        return GetProjectNames(lead)
+    end,
+})
+
 vim.api.nvim_create_user_command("ConductProjectNewSession", function(opts)
     require("conduct").create_new_session(opts.args)
 end, { nargs = 1 })

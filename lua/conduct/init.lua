@@ -237,7 +237,9 @@ function M.delete_project(project_name)
     if project_name ~= "" then
         project_to_be_deleted = project_name
     elseif next(M.current_project) ~= nil then
-        vim.ui.input({ prompt = "delete current project y/n: " }, function(input)
+        vim.ui.input({
+            prompt = "delete current project y/n: ",
+        }, function(input)
             if input == "y" then
                 project_to_be_deleted = M.current_project.name
                 CleanUpProject()
@@ -278,6 +280,47 @@ function M.delete_project(project_name)
         last_file:touch()
         last_file:write(vim.json.encode({}), "w")
     end
+end
+
+function M.rename_project(old_name, new_name)
+    vim.ui.input({
+        prompt = "this will delete all your saved sessions. proceed [y/n]: ",
+    }, function(confirm)
+        if confirm ~= "y" then
+            print("aborting...")
+            return
+        end
+    end)
+
+    local old_project_path = GetProjectDataFolder(old_name)
+    local new_project_path = GetProjectDataFolder(new_name)
+    local project_folder = Path:new(old_project_path)
+    project_folder:rename({ new_name = new_project_path })
+
+    local project_data = Path:new(new_project_path .. "data.json")
+    local data = vim.json.decode(project_data:read())
+    data.name = new_name
+    project_data:write(vim.json.encode(data), "w")
+    project_data:close()
+
+    local last_session_file = new_project_path .. "sessions/__last__"
+    vim.loop.fs_unlink(last_session_file)
+    RemoveItemsFromFolder(new_project_path .. "sessions/")
+
+    if old_name == M.current_project.name then
+        M.current_project = data
+        M.store_current_session()
+    end
+
+    local last_project_file = data_folder .. "__last__"
+    local last_file = Path:new(last_project_file)
+    local last_projects = vim.json.decode(last_file:read())
+    local index = GetIndexOfItem(last_projects, old_name)
+    if index ~= nil then
+        last_projects[index] = new_name
+    end
+    last_file:write(vim.json.encode(last_projects), "w")
+    last_file:close()
 end
 
 -- Sessions
@@ -428,7 +471,7 @@ function CleanUpProject()
     end
 end
 
-function RemoveItemsFromFolder(folder, i)
+function RemoveItemsFromFolder(folder)
     for _, val in ipairs(vim.split(vim.fn.glob(folder .. "*"), "\n")) do
         if val ~= "" then
             local contents = Path:new(val)
