@@ -378,11 +378,47 @@ function M.load_session(session_name)
     if session:exists() then
         vim.cmd("silent source " .. session_file)
         M.current_session = session_name
+
+        local last_session = sessions_folder:absolute() .. "__last__"
+        local last_session_file = Path:new(last_session)
+        if last_session_file:exists() then
+            last_session_file:rm()
+        end
+
+        vim.loop.fs_symlink(session_file, last_session)
     else
         print("session doesn't exists")
     end
 
     session:close()
+end
+
+function M.delete_session(session_name)
+    if next(M.current_project) == nil then
+        print("no project loaded")
+        return
+    end
+
+    local projects_folder = GetProjectDataFolder(M.current_project.name)
+    local sessions_folder = projects_folder .. "sessions/"
+
+    local session_file = Path:new(sessions_folder .. session_name .. ".vim")
+    if not session_file:exists() then
+        print("session doesn't exists")
+        return
+    end
+
+    session_file:rm()
+
+    local last_session = vim.loop.fs_readlink(sessions_folder .. "__last__")
+    if last_session == session_file:absolute() then
+        vim.loop.fs_unlink(sessions_folder .. "__last__")
+        Path:new(sessions_folder .. "__last__"):rm()
+    end
+
+    if M.current_session == session_name then
+        M.current_session = ""
+    end
 end
 
 -- Util functions
