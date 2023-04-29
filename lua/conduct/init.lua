@@ -431,6 +431,37 @@ function M.delete_session(session_name)
     end
 end
 
+function M.rename_session(old_name, new_name)
+    if type(old_name) ~= "string" or type(new_name) ~= "string" then
+        print("please supply all args")
+        return
+    end
+
+    local projects_folder = GetProjectDataFolder(M.current_project.name)
+    local sessions_folder = projects_folder .. "sessions/"
+
+    local session_file = Path:new(sessions_folder .. old_name .. ".vim")
+    if not session_file:exists() then
+        print("session doesn't exists")
+        return
+    end
+
+    local new_session = sessions_folder .. new_name .. ".vim"
+    session_file:rename({ new_name = new_session })
+
+    local last_session = vim.loop.fs_readlink(sessions_folder .. "__last__")
+    if last_session == session_file:absolute() then
+        local last_session_file = sessions_folder .. "__last__"
+        vim.loop.fs_unlink(last_session_file)
+        Path:new(last_session_file):rm()
+        vim.loop.fs_symlink(last_session_file, session_file:absolute())
+    end
+
+    if M.current_session == old_name then
+        M.current_session = new_name
+    end
+end
+
 -- Util functions
 
 function CheckProjectData(project_data)

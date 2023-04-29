@@ -73,3 +73,9 @@ end, { nargs = 1 })
 vim.api.nvim_create_user_command("ConductProjectDeleteSession", function(opts)
     require("conduct").delete_session(opts.args)
 end, { nargs = 1 })
+
+vim.api.nvim_create_user_command("ConductProjectRenameSession", function(opts)
+    local old_name = opts.fargs[1]
+    local new_name = opts.fargs[2]
+    require("conduct").rename_session(old_name, new_name)
+end, { nargs = "*" })
