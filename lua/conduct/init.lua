@@ -462,6 +462,25 @@ function M.rename_session(old_name, new_name)
     end
 end
 
+function M.list_all_sessions()
+    if next(M.current_project) == nil then
+        print("no project loaded")
+        return
+    end
+
+    local projects_folder = GetProjectDataFolder(M.current_project.name)
+    local sessions_path = projects_folder .. "sessions/"
+    local all_sessions = vim.split(vim.fn.glob(sessions_path .. "*.vim"), "\n")
+
+    local sessions = {}
+    for _, file in ipairs(all_sessions) do
+        local session = file:gsub(sessions_path, ""):gsub(".vim$", "")
+        table.insert(sessions, session)
+    end
+
+    return sessions
+end
+
 -- Util functions
 
 function CheckProjectData(project_data)
