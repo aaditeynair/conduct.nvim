@@ -11,9 +11,13 @@ M.presets = {}
 M.functions = {}
 M.current_project = {}
 M.current_session = ""
-
-M.after_project_load = function() end
-M.before_project_load = function() end
+M.hooks = {
+    before_project_load = function() end,
+    after_project_load = function() end,
+    before_session_load = function() end,
+    after_session_load = function() end,
+    before_session_save = function() end,
+}
 
 function M.setup(opts)
     if type(opts) ~= "table" then
@@ -38,13 +42,27 @@ function M.setup(opts)
         print("functions must be a table")
     end
 
-    if type(opts.after_load_function) == "function" then
-        M.after_project_load = opts.after_load_function
-    end
+    local hooks = opts.hooks
+    if type(hooks) == "table" then
+        if type(hooks.before_project_load) == "function" then
+            M.hooks.before_project_load = hooks.before_project_load
+        end
 
-    -- hi
-    if type(opts.before_load_function) == "function" then
-        M.before_project_load = opts.before_load_function
+        if type(hooks.after_project_load) == "function" then
+            M.hooks.after_project_load = hooks.after_project_load
+        end
+
+        if type(hooks.before_session_load) == "function" then
+            M.hooks.before_session_load = hooks.before_session_load
+        end
+
+        if type(hooks.after_session_load) == "function" then
+            M.hooks.after_session_load = hooks.after_session_load
+        end
+
+        if type(hooks.before_session_save) == "function" then
+            M.hooks.before_session_save = hooks.before_session_save
+        end
     end
 end
 
@@ -109,7 +127,7 @@ function M.load_project(project_name)
     end
     M.current_project = project_data
 
-    M.before_project_load()
+    M.hooks.before_project_load()
 
     vim.api.nvim_set_current_dir(project_data.cwd)
     LoadKeybinds(project_data.keybinds, project_data.variables)
@@ -129,10 +147,14 @@ function M.load_project(project_name)
     local last_session_file = sessions_folder:absolute() .. "__last__"
     local last_session = vim.loop.fs_readlink(last_session_file)
     if last_session ~= nil then
+        M.hooks.before_session_load()
+
         vim.cmd("silent source " .. last_session)
         local list = vim.split(last_session, "/")
         local session_name = list[#list]
         M.current_session = session_name:gsub(".vim$", "")
+
+        M.hooks.after_session_load()
     end
 
     sessions_folder:close()
@@ -153,7 +175,7 @@ function M.load_project(project_name)
     last_file:write(vim.json.encode(last_file_data), "w")
     last_file:close()
 
-    M.after_project_load()
+    M.hooks.after_project_load()
 end
 
 function M.load_project_config_file(project_name)
@@ -353,6 +375,7 @@ function M.store_current_session()
         session_file = sessions_folder:absolute() .. M.current_session .. ".vim"
     end
 
+    M.hooks.before_session_save()
     vim.cmd("silent mksession! " .. session_file)
 
     local last_session = sessions_folder:absolute() .. "__last__"
@@ -378,6 +401,7 @@ function M.load_session(session_name)
     end
 
     M.store_current_session()
+    M.hooks.before_session_load()
 
     local project_data_folder = GetProjectDataFolder(M.current_project.name)
     local sessions_folder = Path:new(project_data_folder .. "sessions/")
@@ -401,6 +425,8 @@ function M.load_session(session_name)
     end
 
     session:close()
+
+    M.hooks.after_session_load()
 end
 
 function M.delete_session(session_name)
