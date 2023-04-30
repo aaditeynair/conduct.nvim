@@ -3,6 +3,7 @@ local pickers = require("conduct.telescope")
 
 return telescope.register_extension({
     exports = {
-        conduct = pickers.search_projects,
+        projects = pickers.search_projects,
+        sessions = pickers.search_sessions,
     },
 })

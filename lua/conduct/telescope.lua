@@ -31,4 +31,29 @@ function M.search_projects(opts)
         :find()
 end
 
+function M.search_sessions(opts)
+    opts = opts or {}
+    opts.layout_config = {
+        horizontal = { width = 0.5 },
+    }
+    local all_sessions = require("conduct").list_all_sessions()
+    pickers
+        .new(opts, {
+            prompt_title = "Sessions",
+            finder = finders.new_table({
+                results = all_sessions,
+            }),
+            sorter = conf.generic_sorter(opts),
+            attach_mappings = function(prompt_bufnr, _)
+                actions.select_default:replace(function()
+                    actions.close(prompt_bufnr)
+                    local selection = action_state.get_selected_entry()
+                    require("conduct").load_session(selection[1])
+                end)
+                return true
+            end,
+        })
+        :find()
+end
+
 return M
