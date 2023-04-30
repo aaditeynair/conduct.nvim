@@ -16,6 +16,18 @@ function GetProjectNames(lead)
     return projects
 end
 
+function GetSessionsName(lead)
+    local all_sessions = require("conduct").list_all_sessions()
+    local sessions = {}
+    for _, session in ipairs(all_sessions) do
+        if session:find("^" .. lead) ~= nil then
+            table.insert(sessions, session)
+        end
+    end
+
+    return sessions
+end
+
 vim.api.nvim_create_user_command("ConductNewProject", function(opts)
     require("conduct").create_project(opts.args)
 end, { nargs = 1 })
@@ -68,14 +80,29 @@ end, { nargs = 1 })
 
 vim.api.nvim_create_user_command("ConductProjectLoadSession", function(opts)
     require("conduct").load_session(opts.args)
-end, { nargs = 1 })
+end, {
+    nargs = 1,
+    complete = function(lead)
+        return GetSessionsName(lead)
+    end,
+})
 
 vim.api.nvim_create_user_command("ConductProjectDeleteSession", function(opts)
     require("conduct").delete_session(opts.args)
-end, { nargs = 1 })
+end, {
+    nargs = 1,
+    complete = function(lead)
+        return GetSessionsName(lead)
+    end,
+})
 
 vim.api.nvim_create_user_command("ConductProjectRenameSession", function(opts)
     local old_name = opts.fargs[1]
     local new_name = opts.fargs[2]
     require("conduct").rename_session(old_name, new_name)
-end, { nargs = "*" })
+end, {
+    nargs = "*",
+    complete = function(lead)
+        return GetSessionsName(lead)
+    end,
+})

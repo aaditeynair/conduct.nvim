@@ -464,7 +464,6 @@ end
 
 function M.list_all_sessions()
     if next(M.current_project) == nil then
-        print("no project loaded")
         return
     end
 
