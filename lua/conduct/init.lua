@@ -369,8 +369,8 @@ function M.store_current_session()
 
     local session_file
     if M.current_session == "" then
-        session_file = sessions_folder:absolute() .. "Session.vim"
-        M.current_session = "Session"
+        session_file = sessions_folder:absolute() .. "default.vim"
+        M.current_session = "default"
     else
         session_file = sessions_folder:absolute() .. M.current_session .. ".vim"
     end
