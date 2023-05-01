@@ -573,9 +573,9 @@ function GetIndexOfItem(list, item_name)
 end
 
 function CleanUpProject()
-    M.store_current_session()
+    if next(M.current_project) ~= nil then
+        M.store_current_session()
 
-    if M.current_project ~= {} then
         if type(M.current_project.keybinds) == "table" then
             for _, keybinding in ipairs(M.current_project.keybinds) do
                 local lhs = keybinding[1]
@@ -609,7 +609,7 @@ end
 
 -- Autocmds
 
-vim.api.nvim_create_autocmd("ExitPre", {
+vim.api.nvim_create_autocmd("QuitPre", {
     desc = "Delete the keybindings set by the project",
     group = conduct_augroup,
     callback = function()
