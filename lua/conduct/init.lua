@@ -479,7 +479,8 @@ function M.list_all_sessions()
 
     local sessions = {}
     for _, file in ipairs(all_sessions) do
-        local session = file:gsub(sessions_path, ""):gsub(".vim$", "")
+        local path = sessions_path:gsub("[%(%)%.%+%-%*%?%[%]%^%$%%]", "%%%1")
+        local session = file:gsub(path, ""):gsub(".vim$", "")
         table.insert(sessions, session)
     end
 
