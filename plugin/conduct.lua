@@ -54,6 +54,12 @@ end, {
     end,
 })
 
+vim.api.nvim_create_user_command("ConductReloadProjectConfig", function()
+    require("conduct").reload_current_project_config()
+end, {
+    nargs = 0,
+})
+
 vim.api.nvim_create_user_command("ConductDeleteProject", function(opts)
     require("conduct").delete_project(opts.args)
 end, {

@@ -192,25 +192,6 @@ function M.load_project_config_file(project_name)
     local project_folder = GetProjectDataFolder(project_to_be_opened)
     local project_file_location = project_folder .. "data.json"
     vim.cmd("e " .. project_file_location)
-
-    if
-        next(vim.api.nvim_get_autocmds({
-            event = "BufWritePost",
-            buffer = 0,
-            group = conduct_augroup,
-        })) == nil
-    then
-        vim.api.nvim_create_autocmd("BufWritePost", {
-            buffer = 0,
-            group = conduct_augroup,
-            callback = function()
-                if M.current_project.name == project_to_be_opened then
-                    print("reloading project config...")
-                    M.reload_current_project_config()
-                end
-            end,
-        })
-    end
 end
 
 function M.load_last_project()
@@ -230,8 +211,6 @@ function M.reload_current_project_config()
     end
 
     M.load_project(M.current_project.name)
-
-    M.after_project_load()
 end
 
 function M.list_all_projects()
