@@ -1,5 +1,19 @@
 # conduct.nvim
 
+- [conduct.nvim](#conductnvim)
+  - [Features](#features)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
+    - [Projects](#projects)
+    - [Sessions](#sessions)
+  - [Project Config Structure](#project-config-structure)
+    - [Keybinds](#keybinds)
+    - [Variables](#variables)
+  - [Presets](#presets)
+  - [Functions](#functions)
+
 A project manager for Neovim
 
 ## Features
@@ -8,7 +22,7 @@ A project manager for Neovim
 - Run commands or Lua functions on keybindings
 - Presets for multiple projects that share some similarities
 - Easy to use API
-- Telescope intergration
+- Telescope integration
 
 ## Requirements
 
@@ -63,7 +77,7 @@ require("conduct").setup({
 | Command                    | Args                  | Function                                          |
 | -------------------------- | --------------------- | ------------------------------------------------- |
 | ConductNewProject          | `name`                | Creates a new project with the supplied name      |
-| ConductLoadProject         | `name`                | Loads the suppied project                         |
+| ConductLoadProject         | `name`                | Loads the supplied project                        |
 | ConductLoadLastProject     | none                  | Loads the last opened project                     |
 | ConductRenameProject       | `old_name` `new_name` | Renames the project with `old_name` to `new_name` |
 | ConductDeleteProject       | `name`                | Deletes the project with the supplied name        |
@@ -81,7 +95,81 @@ _These commands only work when a project is active_
 | ConductProjectDeleteSession | `session_name`        | Deletes the supplied session                                                                                       |
 | ConductProjectRenameSession | `old_name` `new_name` | Renames `old_name` session to `new_name` even if `old_name` is the active session                                  |
 
-### Functions
+## Project Config Structure
+
+```json
+{
+  "name": "project name",
+  "cwd": "/home/user/project/foo",
+  "variables": [],
+  "preset": "",
+  "keybinds": []
+}
+```
+
+| Field     | Value                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------- |
+| name      | project name. only change the project name via the rename command. this is only for the API |
+| cwd       | path to project                                                                             |
+| variables | object with keys as variable names and value as the variable value                          |
+| preset    | name of preset                                                                              |
+| keybinds  | list containing a keybindings                                                               |
+
+### Keybinds
+
+The keybinds property should be a list that contains data in the following manner:
+
+```json
+{
+  "keybinds": [["keybinding", "command", "type"]]
+}
+```
+
+- keybinding: the key combination of the binding ("<leader>hi", "<leader>so")
+- command: can be a vim command or the name of a function
+- type: can be either `command` or `function`. If not provided, it is assumed as command
+
+### Variables
+
+Variables can only be used in the `command` type keybindings. They can be mentioned using the `${variable_name}` syntax.
+
+```json
+{
+  "variables": {
+    "flags": "-la"
+  },
+  "keybinds": [["<leader>so", "TermOpen control ls ${flags}"]]
+}
+```
+
+## Presets
+
+Presets can be used to setup keybinds for multiple projects that might share similarities
+
+```lua
+require("conduct").setup({
+    presets = {
+        node = {
+            keybinds = {
+                {"<leader>sd", "TermOpen dev-server npm run dev", "command"}
+                {"<leader>sb", "TermOpen build npm run build", "command"}
+            }
+        }
+    }
+})
+```
+
+```json
+{
+  "name": "personal-blog-react",
+  "cwd": "/home/user/project/blog",
+  "variables": [],
+  "preset": "node",
+  "keybinds": []
+}
+```
+
+## Functions
 
 Define functions when setting up conduct.nvim and bind keys to them in the project config
 
