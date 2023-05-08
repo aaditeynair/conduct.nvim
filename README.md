@@ -60,6 +60,16 @@ require("conduct").setup({
 
 ### Projects
 
+| Command                    | Args                   | Function                                          |
+| -------------------------- | ---------------------- | ------------------------------------------------- |
+| ConductNewProject          | `name`                 | Creates a new project with the supplied name      |
+| ConductLoadProject         | `name`                 | Loads the suppied project                         |
+| ConductLoadLastProject     | none                   | Loads the last opened project                     |
+| ConductRenameProject       | `old_name`, `new_name` | Renames the project with `old_name` to `new_name` |
+| ConductDeleteProject       | `name`                 | Deletes the project with the supplied name        |
+| ConductLoadProjectConfig   | none                   | Loads the project config file                     |
+| ConductReloadProjectConfig | none                   | Reloads the config file of the active project     |
+
 #### ConductNewProject [name]
 
 Creates a new project with the supplied name
