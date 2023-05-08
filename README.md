@@ -60,63 +60,26 @@ require("conduct").setup({
 
 ### Projects
 
-| Command                    | Args                   | Function                                          |
-| -------------------------- | ---------------------- | ------------------------------------------------- |
-| ConductNewProject          | `name`                 | Creates a new project with the supplied name      |
-| ConductLoadProject         | `name`                 | Loads the suppied project                         |
-| ConductLoadLastProject     | none                   | Loads the last opened project                     |
-| ConductRenameProject       | `old_name`, `new_name` | Renames the project with `old_name` to `new_name` |
-| ConductDeleteProject       | `name`                 | Deletes the project with the supplied name        |
-| ConductLoadProjectConfig   | none                   | Loads the project config file                     |
-| ConductReloadProjectConfig | none                   | Reloads the config file of the active project     |
-
-#### ConductNewProject [name]
-
-Creates a new project with the supplied name
-
-#### ConductLoadProject [name]
-
-Loads the suppied project
-
-#### ConductLoadLastProject
-
-Loads the last opened project
-
-#### ConductLoadProjectConfig
-
-Loads the project config file
-
-#### ConductReloadProjectConfig
-
-Reloads the config file of the active project
-
-#### ConductDeleteProject [name]
-
-Deletes the project with the supplied name
-
-#### ConductRenameProject [old_name] [new_name]
-
-Renames the project with `old_name` to `new_name`
+| Command                    | Args                  | Function                                          |
+| -------------------------- | --------------------- | ------------------------------------------------- |
+| ConductNewProject          | `name`                | Creates a new project with the supplied name      |
+| ConductLoadProject         | `name`                | Loads the suppied project                         |
+| ConductLoadLastProject     | none                  | Loads the last opened project                     |
+| ConductRenameProject       | `old_name` `new_name` | Renames the project with `old_name` to `new_name` |
+| ConductDeleteProject       | `name`                | Deletes the project with the supplied name        |
+| ConductLoadProjectConfig   | none                  | Loads the project config file                     |
+| ConductReloadProjectConfig | none                  | Reloads the config file of the active project     |
 
 ### Sessions
 
 _These commands only work when a project is active_
 
-#### ConductProjectNewSession [session_name]
-
-Saves current session and creates a new session with the supplied name. The new session is made the active session
-
-#### ConductProjectLoadSession [session_name]
-
-Saves the current session and loads the supplied session
-
-#### ConductProjectDeleteSession [session_name]
-
-Deletes the supplied session
-
-##### ConductProjectRenameSession [old_name] [new_name]
-
-Renames `old_name` session to `new_name` even if `old_name` is the active session
+| Command                     | Args                  | Function                                                                                                           |
+| --------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| ConductProjectNewSession    | `session_name`        | Saves current session and creates a new session with the supplied name. The new session is made the active session |
+| ConductProjectLoadSession   | `session_name`        | Saves the current session and loads the supplied session                                                           |
+| ConductProjectDeleteSession | `session_name`        | Deletes the supplied session                                                                                       |
+| ConductProjectRenameSession | `old_name` `new_name` | Renames `old_name` session to `new_name` even if `old_name` is the active session                                  |
 
 ### Functions
 
