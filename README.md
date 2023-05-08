@@ -1,20 +1,21 @@
 # conduct.nvim
 
-- [conduct.nvim](#conductnvim)
-  - [Features](#features)
-  - [Requirements](#requirements)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-  - [Usage](#usage)
-    - [Projects](#projects)
-    - [Sessions](#sessions)
-  - [Project Config Structure](#project-config-structure)
-    - [Keybinds](#keybinds)
-    - [Variables](#variables)
-  - [Presets](#presets)
-  - [Functions](#functions)
-
 A project manager for Neovim
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+  - [Projects](#projects)
+  - [Sessions](#sessions)
+- [Project Config Structure](#project-config-structure)
+  - [Keybinds](#keybinds)
+  - [Variables](#variables)
+- [Presets](#presets)
+- [Functions](#functions)
 
 ## Features
 
