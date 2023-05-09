@@ -16,6 +16,7 @@ A project manager for Neovim
   - [Variables](#variables)
 - [Presets](#presets)
 - [Functions](#functions)
+- [Telescope](#telescope)
 
 ## Features
 
