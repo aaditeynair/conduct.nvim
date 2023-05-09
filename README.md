@@ -1,6 +1,6 @@
 # conduct.nvim
 
-A project manager for Neovim
+A project management plugin for Neovim with session support
 
 ## Table of Contents
 
@@ -87,6 +87,8 @@ require("conduct").setup({
 | ConductReloadProjectConfig | none                  | Reloads the config file of the active project     |
 
 ### Sessions
+
+One of the main differences between conduct.nvim and other project management plugins, is its ability to store multiple session for a single project. This allows you to switch between different contexts in the code.
 
 _These commands only work when a project is active_
 
