@@ -23,6 +23,8 @@ A project management plugin for Neovim with session support
 - Intuitive and easy to manage projects
 - Run commands or Lua functions on keybindings
 - Presets for multiple projects that share some similarities
+- Store multiple sessions for a single project
+- Provides hooks to customize your experience
 - Easy to use API
 - Telescope integration
 
