@@ -198,3 +198,13 @@ require("conduct").setup({
   "keybinds": [["<leader>so", "run_npm_server", "function"]]
 }
 ```
+
+## Telescope
+
+Conduct.nvim provides telescope integration for switching between projects and sessions.
+
+```lua
+telescope.load_extension("conduct")
+```
+
+Run `:Telescope conduct projects` to search and load a project and run `:Telescope conduct sessions` to switch between project sessions.
