@@ -35,9 +35,12 @@ A project management plugin for Neovim with session support
 
 ## Installation
 
+lazy.nvim:
+
 ```lua
 {
-    "https://github.com/nvim-lua/plenary.nvim",
+    "aaditeynair/conduct.nvim",
+    dependencies = "nvim-lua/plenary.nvim",
     cmd = {
         "ConductNewProject",
         "ConductLoadProject",
