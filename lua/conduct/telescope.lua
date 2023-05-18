@@ -86,11 +86,52 @@ function M.search_sessions(opts)
                 results = all_sessions,
             }),
             sorter = conf.generic_sorter(opts),
-            attach_mappings = function(prompt_bufnr, _)
+            attach_mappings = function(prompt_bufnr, map)
                 actions.select_default:replace(function()
                     actions.close(prompt_bufnr)
                     local selection = action_state.get_selected_entry()
                     require("conduct").load_session(selection[1])
+                end)
+
+                map({ "i", "n" }, "<C-d>", function()
+                    actions.close(prompt_bufnr)
+                    local selection = action_state.get_selected_entry()
+
+                    if selection == nil then
+                        print("no session selected")
+                        return
+                    end
+
+                    local session_name = selection[1]
+                    vim.ui.input({ prompt = "confirm session delete [y/n]: " }, function(confirm)
+                        if confirm ~= "y" then
+                            print("aborting...")
+                            return
+                        end
+
+                        print("deleting " .. session_name .. "...")
+                        require("conduct").delete_session(session_name)
+                    end)
+                end)
+
+                map({ "i", "n" }, "<C-r>", function()
+                    actions.close(prompt_bufnr)
+                    local selection = action_state.get_selected_entry()
+
+                    if selection == nil then
+                        print("no session selected")
+                        return
+                    end
+
+                    local session_name = selection[1]
+                    vim.ui.input({ prompt = "enter the new name: " }, function(new_name)
+                        if new_name ~= "" then
+                            require("conduct").rename_session(session_name, new_name)
+                            return
+                        end
+
+                        print("aborting...")
+                    end)
                 end)
                 return true
             end,
