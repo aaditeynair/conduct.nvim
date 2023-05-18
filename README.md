@@ -211,6 +211,11 @@ require("conduct").setup({
 
 Conduct.nvim provides telescope integration for switching between projects and sessions.
 
+| Key combination | Operation                          |
+| --------------- | ---------------------------------- |
+| Ctrl d          | Delete selected session or project |
+| Ctrl r          | Rename selected session or project |
+
 ```lua
 telescope.load_extension("conduct")
 ```
