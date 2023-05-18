@@ -150,7 +150,9 @@ function M.load_project(project_name)
         M.hooks.before_session_load()
 
         vim.cmd("silent source " .. last_session)
-        M.current_session = Path:new(last_session):normalize(vim.fn.getcwd())
+
+        local session_name = vim.fs.basename(last_session)
+        M.current_session = session_name:gsub(".vim$", "")
 
         M.hooks.after_session_load()
     end
