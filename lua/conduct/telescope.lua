@@ -47,6 +47,26 @@ function M.search_projects(opts)
                     end)
                 end)
 
+                map({ "i", "n" }, "<C-r>", function()
+                    actions.close(prompt_bufnr)
+                    local selection = action_state.get_selected_entry()
+
+                    if selection == nil then
+                        print("no project selected")
+                        return
+                    end
+
+                    local project_name = selection[1]
+                    vim.ui.input({ prompt = "enter the new name: " }, function(new_name)
+                        if new_name ~= "" then
+                            require("conduct").rename_project(project_name, new_name)
+                            return
+                        end
+
+                        print("aborting...")
+                    end)
+                end)
+
                 return true
             end,
         })
