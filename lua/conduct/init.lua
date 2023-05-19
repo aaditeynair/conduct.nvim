@@ -224,6 +224,17 @@ function M.list_all_projects()
     return all_project_names
 end
 
+function M.get_all_project_data()
+    local all_projects = vim.split(vim.fn.glob(data_folder .. "*/"), "\n")
+    local project_data = {}
+    for _, project in ipairs(all_projects) do
+        local data = vim.json.decode(Path:new(project .. "data.json"):read())
+        table.insert(project_data, data)
+    end
+
+    return project_data
+end
+
 function M.get_last_opened_projects()
     local last_project_data_file = data_folder .. "__last__"
     local last_data_file = Path:new(last_project_data_file)
