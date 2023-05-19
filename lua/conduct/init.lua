@@ -204,6 +204,24 @@ function M.load_last_project()
     M.load_project(last_project_name)
 end
 
+function M.load_cwd_project()
+    local cwd = vim.fn.getcwd()
+    local project = ""
+    for _, project_data in ipairs(M.get_all_project_data()) do
+        if project_data.cwd == cwd then
+            project = project_data.name
+            break
+        end
+    end
+
+    if project ~= "" then
+        M.load_project(project)
+        return
+    end
+
+    print("no project with the current cwd")
+end
+
 function M.reload_current_project_config()
     if next(M.current_project) == nil then
         print("no project active")

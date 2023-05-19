@@ -45,6 +45,10 @@ vim.api.nvim_create_user_command("ConductLoadLastProject", function()
     require("conduct").load_last_project()
 end, { nargs = 0 })
 
+vim.api.nvim_create_user_command("ConductLoadCwdProject", function()
+    require("conduct").load_cwd_project()
+end, { nargs = 0 })
+
 vim.api.nvim_create_user_command("ConductLoadProjectConfig", function(opts)
     require("conduct").load_project_config_file(opts.args)
 end, {
